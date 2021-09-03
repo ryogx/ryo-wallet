@@ -6,6 +6,10 @@ import { ipcMain, dialog } from "electron";
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
+const tmp = require('tmp');
+const archiver = require('archiver');
+
+const eol = JSON.stringify(os.EOL)
 
 export class Backend {
     constructor(mainWindow) {
@@ -237,6 +241,48 @@ export class Backend {
                     })
                 }
                 break;
+            case "dump_debug_info":
+                let homedir = os.homedir()
+                let desktop = `${homedir}${path.sep}Desktop${path.sep}`
+                if (!fs.existsSync(desktop)) {
+                    desktop = `${homedir}${path.sep}`
+                }
+                let dump_zip = `${desktop}ryo-wallet-dump-${new Date().toISOString().replace(/:/g,'_')}.zip`
+                var output = fs.createWriteStream(dump_zip);
+                var archive = archiver('zip');
+                let daemon = this.daemon;
+                let walletd = this.walletd;
+                archive.pipe(output);
+                let count = 0;
+                const addToZip = (path, fd, stream, name) => {
+                    fs.write(fd, stream.join(eol), err => {
+                        if (err) {
+                            process.stderr.write(`Error writing daemon stdout to file ${path}`, err);
+                        } else {
+                            fs.close(fd);
+                            archive.file(path, {name: name});
+                        }
+                        count += 1
+                        if (count >= 4) {
+                            archive.finalize()
+                        }
+                    })
+                }
+                tmp.file({ mode: 0o644, prefix: 'ryo-daemon-out-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                    addToZip(path, fd, this.daemon.logStdout, 'ryo-daemon-out.txt')
+                })
+                tmp.file({ mode: 0o644, prefix: 'ryo-daemon-err-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                    addToZip(path, fd, this.daemon.logStderr, 'ryo-daemon-err.txt')
+                })
+                tmp.file({ mode: 0o644, prefix: 'ryo-walletd-out-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                    addToZip(path, fd, this.walletd.logStdout, 'ryo-walletd-out.txt')
+                })
+                tmp.file({ mode: 0o644, prefix: 'ryo-walletd-err-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                    addToZip(path, fd, this.walletd.logStderr, 'ryo-walletd-err.txt')
+                })
+                output.on('close', () => {
+                    this.send("dump_completed", {});
+                })
 
             default:
         }

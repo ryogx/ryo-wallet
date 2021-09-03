@@ -37,6 +37,9 @@ export class WalletRPC {
         this.agent = new http.Agent({keepAlive: true, maxSockets: 1})
         this.queue = new queue(1, Infinity)
 
+        this.logStderr = []
+        this.logStdout = []
+
     }
 
     // this function will take an options object for testnet, data-dir, etc
@@ -96,15 +99,18 @@ export class WalletRPC {
                         detached: true
                     })
                 }
-
                 // save this info for later RPC calls
                 this.protocol = "http://"
                 this.hostname = "127.0.0.1"
                 this.port = options.wallet.rpc_bind_port
 
+                this.walletRPCProcess.stderr.on("data", (data) => {
+                    this.logStderr.push(data)
+                    //process.stderr.write(`Wallet: ${data}`)
+                })
                 this.walletRPCProcess.stdout.on("data", (data) => {
-
-                    // process.stdout.write(`Wallet: ${data}`)
+                    this.logStdout.push(data)
+                    //process.stdout.write(`Wallet: ${data}`)
 
                     let lines = data.toString().split("\n");
                     let match, height = null

@@ -227,6 +227,18 @@ export class Gateway {
                 }, 250);
                 break
 
+            case "dump_completed":
+                Dialog.create({
+                    title: "Success",
+                    message: "Debug data dumped",
+                    ok: {
+                        label: "OK"
+                    }
+                }).catch(() => {
+                    this.dumpDialog = false
+                })
+
+
         }
     }
 }

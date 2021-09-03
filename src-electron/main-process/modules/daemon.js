@@ -18,7 +18,8 @@ export class Daemon {
 
         this.agent = new http.Agent({keepAlive: true, maxSockets: 1})
         this.queue = new queue(1, Infinity)
-
+        this.logStdout = []
+        this.logStderr = []
     }
 
 
@@ -154,7 +155,15 @@ export class Daemon {
             this.hostname = options.daemon.rpc_bind_ip
             this.port = options.daemon.rpc_bind_port
 
-            this.daemonProcess.stdout.on("data", data => process.stdout.write(`Daemon: ${data}`))
+            this.daemonProcess.stdout.on("data", data => {
+                this.logStdout.push(data)
+                process.stdout.write(`Daemon: ${data}`)
+
+            })
+            this.daemonProcess.stderr.on("data", data => {
+                this.logStderr.push(data)
+                process.stderr.write(`Daemon Error: ${data}`)
+            })
             this.daemonProcess.on("error", err => process.stderr.write(`Daemon: ${err}\n`))
             this.daemonProcess.on("close", code => process.stderr.write(`Daemon: exited with code ${code}\n`))
 
