@@ -15,6 +15,7 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "archiver": "^5.3.0",
     "axios": "^0.18.1",
     "better-sqlite3": "^5.4.0",
     "big-integer": "^1.6.41",
@@ -31,6 +32,7 @@
     "request-promise": "^4.2.2",
     "rotating-file-stream": "^1.4.1",
     "ryo-core-js": "git://github.com/mosu-forge/ryo-core-js.git",
+    "tmp": "^0.2.1",
     "vue-chartjs": "^3.4.2",
     "vue-i18n": "^8.8.0",
     "vue-timeago": "^5.0.0",
