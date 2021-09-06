@@ -233,7 +233,7 @@ export class Gateway {
                     message: "Debug data dumped",
                     ok: {
                         label: "OK",
-			color: "primary"
+                        color: "primary"
                     },
                     cancel: {
                         flat: true,
