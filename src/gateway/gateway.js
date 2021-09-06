@@ -243,7 +243,7 @@ export class Gateway {
                 }).catch(() => {
                     this.closeDialog = false
                 })
-		break
+                break
 
 
         }
