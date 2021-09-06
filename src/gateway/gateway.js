@@ -232,11 +232,18 @@ export class Gateway {
                     title: "Success",
                     message: "Debug data dumped",
                     ok: {
-                        label: "OK"
+                        label: "OK",
+			color: "primary"
+                    },
+                    cancel: {
+                        flat: true,
+		        label: "",
+                        color: this.theme=="dark"?"white":"dark"
                     }
                 }).catch(() => {
-                    this.dumpDialog = false
+                    this.closeDialog = false
                 })
+		break
 
 
         }
