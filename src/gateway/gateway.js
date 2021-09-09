@@ -228,7 +228,7 @@ export class Gateway {
                 break
 
             case "dump_completed":
-                if (process.platform == "darwin") {
+                if (process.platform === "darwin") {
                     // Workaround for buttons not appearning on macOS
                     Dialog.create({
                         title: "Success",

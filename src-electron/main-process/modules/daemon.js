@@ -19,7 +19,6 @@ export class Daemon {
         this.agent = new http.Agent({keepAlive: true, maxSockets: 1})
         this.queue = new queue(1, Infinity)
         this.logStdout = []
-        this.logStderr = []
     }
 
 
@@ -144,6 +143,10 @@ export class Daemon {
 
             if (process.platform === "win32") {
                 this.daemonProcess = child_process.spawn(path.join(__ryo_bin, "ryod.exe"), args)
+            } else if (process.platform === "darwin") {
+                this.daemonProcess = child_process.spawn(path.join(__ryo_bin, "ryod"), args, {
+
+                })
             } else {
                 this.daemonProcess = child_process.spawn(path.join(__ryo_bin, "ryod"), args, {
                     detached: true
@@ -159,10 +162,6 @@ export class Daemon {
                 this.logStdout.push(data)
                 process.stdout.write(`Daemon: ${data}`)
 
-            })
-            this.daemonProcess.stderr.on("data", data => {
-                this.logStderr.push(data)
-                process.stderr.write(`Daemon Error: ${data}`)
             })
             this.daemonProcess.on("error", err => process.stderr.write(`Daemon: ${err}\n`))
             this.daemonProcess.on("close", code => process.stderr.write(`Daemon: exited with code ${code}\n`))

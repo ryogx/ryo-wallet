@@ -20,6 +20,8 @@ export class Backend {
         this.config_dir = null
         this.config_file = null
         this.config_data = {}
+        this.daemonFilePrefix = "ryo-daemon-out"
+        this.walletdFilePrefix = "ryo-walletd-out"
     }
 
     init() {
@@ -60,6 +62,12 @@ export class Backend {
                 timeout: 600000 // 10 minutes
             },
 
+            /*
+             * For the debug dump feature, the console log level should be the same as the file log level,
+             * so that we see the same information on all platforms.
+             * That is because on Mac OS, we package the log file, as console piping does not work there,
+             * but on other platforms, we package the console output.
+             */
             daemon: {
                 type: "local_remote",
                 remote_host: "geo.ryoblocks.com",
@@ -74,13 +82,13 @@ export class Backend {
                 in_peers: 0,
                 limit_rate_up: -1,
                 limit_rate_down: -1,
-                log_level: 0,
+                log_level: 3,
                 enhanced_ip_privacy: true
             },
 
             wallet: {
                 rpc_bind_port: 12214,
-                log_level: 0
+                log_level: 3
             },
 
             pool: {
@@ -252,6 +260,8 @@ export class Backend {
                 var archive = archiver('zip');
                 let daemon = this.daemon;
                 let walletd = this.walletd;
+                let daemonFilePrefix = this.daemonFilePrefix;
+                let walletdFilePrefix = this.walletdFilePrefix;
                 archive.pipe(output);
                 let count = 0;
                 const addToZip = (path, fd, stream, name) => {
@@ -263,26 +273,28 @@ export class Backend {
                             archive.file(path, {name: name});
                         }
                         count += 1
-                        if (count >= 4) {
+                        if (count >= 2) { // Two log files
                             archive.finalize()
                         }
                     })
                 }
-                tmp.file({ mode: 0o644, prefix: 'ryo-daemon-out-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
-                    addToZip(path, fd, this.daemon.logStdout, 'ryo-daemon-out.txt')
-                })
-                tmp.file({ mode: 0o644, prefix: 'ryo-daemon-err-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
-                    addToZip(path, fd, this.daemon.logStderr, 'ryo-daemon-err.txt')
-                })
-                tmp.file({ mode: 0o644, prefix: 'ryo-walletd-out-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
-                    addToZip(path, fd, this.walletd.logStdout, 'ryo-walletd-out.txt')
-                })
-                tmp.file({ mode: 0o644, prefix: 'ryo-walletd-err-', postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
-                    addToZip(path, fd, this.walletd.logStderr, 'ryo-walletd-err.txt')
-                })
                 output.on('close', () => {
                     this.send("dump_completed", {});
                 })
+
+                // On Mac, logStdout is empty because it can't capture output properly, so fall back to log file
+                if (process.platform !== 'darwin') {
+                    tmp.file({ mode: 0o644, prefix: daemonFilePrefix, postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                        addToZip(path, fd, this.daemon.logStdout, `${daemonFilePrefix}.txt`)
+                    })
+                    tmp.file({ mode: 0o644, prefix: walletdFilePrefix, postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                        addToZip(path, fd, this.walletd.logStdout, `${walletdFilePrefix}.txt`)
+                    })
+                } else {
+                    archive.file(daemon.log_file, {name: `${daemonFilePrefix}.txt`})
+                    archive.file(walletd.log_file, {name: `${walletdFilePrefix}.txt`})
+                    archive.finalize()
+                }
 
             default:
         }
