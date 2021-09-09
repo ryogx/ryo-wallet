@@ -19,6 +19,7 @@ export class Daemon {
         this.agent = new http.Agent({keepAlive: true, maxSockets: 1})
         this.queue = new queue(1, Infinity)
         this.logStdout = []
+        this.log_file = null
     }
 
 
@@ -125,10 +126,12 @@ export class Daemon {
             if(options.app.testnet) {
                 this.testnet = true
                 args.push("--testnet")
-                args.push("--log-file", path.join(options.app.data_dir, "testnet", "logs", "ryod.log"))
+                this.log_file = path.join(options.app.data_dir, "testnet", "logs", "ryod.log")
+                args.push("--log-file", this.log_file) 
                 args.push("--add-peer", "45.77.68.151:13310")
             } else {
-                args.push("--log-file", path.join(options.app.data_dir, "logs", "ryod.log"))
+                this.log_file = path.join(options.app.data_dir, "logs", "ryod.log")
+                args.push("--log-file", this.log_file) 
             }
 
             if(options.daemon.rpc_bind_ip !== "127.0.0.1")

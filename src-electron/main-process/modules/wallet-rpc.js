@@ -38,6 +38,7 @@ export class WalletRPC {
         this.queue = new queue(1, Infinity)
 
         this.logStdout = []
+        this.log_file = null
 
     }
 
@@ -70,23 +71,22 @@ export class WalletRPC {
                     // "--log-level", "*:WARNING,net*:FATAL,net.http:DEBUG,global:INFO,verify:FATAL,stacktrace:INFO",
                 ]
 
-                let log_file
-
                 this.data_dir = options.app.data_dir
 
                 if(options.app.testnet) {
                     this.testnet = true
                     this.wallet_dir = path.join(options.app.data_dir, "testnet", "wallets")
-                    log_file = path.join(options.app.data_dir, "testnet", "logs", "wallet-rpc.log")
+                    this.log_file = path.join(options.app.data_dir, "testnet", "logs", "wallet-rpc.log")
                     args.push("--testnet")
                     args.push("--log-file", log_file)
                     args.push("--wallet-dir", this.wallet_dir)
                 } else {
                     this.wallet_dir = path.join(options.app.data_dir, "wallets")
-                    log_file = path.join(options.app.data_dir, "logs", "wallet-rpc.log")
+                    this.log_file = path.join(options.app.data_dir, "logs", "wallet-rpc.log")
                     args.push("--log-file", log_file)
                     args.push("--wallet-dir", this.wallet_dir)
                 }
+                let log_file = this.log_file
 
                 if (fs.existsSync(log_file))
                     fs.truncateSync(log_file, 0)

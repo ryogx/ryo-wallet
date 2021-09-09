@@ -254,41 +254,43 @@ export class Backend {
                     desktop = `${homedir}${path.sep}`
                 }
                 let dump_zip = `${desktop}ryo-wallet-dump-${new Date().toISOString().replace(/:/g,'_')}.zip`
-                var output = fs.createWriteStream(dump_zip);
-                var archive = archiver('zip');
+                let output = fs.createWriteStream(dump_zip);
+                let archive = archiver('zip');
                 let daemon = this.daemon;
                 let walletd = this.walletd;
                 let daemonFilePrefix = this.daemonFilePrefix;
                 let walletdFilePrefix = this.walletdFilePrefix;
                 archive.pipe(output);
-                let count = 0;
-                const addToZip = (path, fd, stream, name) => {
-                    fs.write(fd, stream.join(""), err => {
-                        if (err) {
-                            process.stderr.write(`Error writing daemon stdout to file ${path}`, err);
-                        } else {
-                            fs.close(fd);
-                            archive.file(path, {name: name});
-                        }
-                        count += 1
-                        if (count >= 2) { // Two log files
-                            archive.finalize()
-                        }
-                    })
-                }
                 output.on('close', () => {
                     this.send("dump_completed", {});
                 })
 
                 // On Mac, logStdout is empty because it can't capture output properly, so fall back to log file
                 if (process.platform !== 'darwin') {
-                    tmp.file({ mode: 0o644, prefix: daemonFilePrefix, postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
-                        addToZip(path, fd, this.daemon.logStdout, `${daemonFilePrefix}.txt`)
+                  let count = 0;
+                  const addToZip = (path, fd, stream, name) => {
+                    fs.write(fd, stream.join(""), err => {
+                      if (err) {
+                          process.stderr.write(`Error writing daemon stdout to file ${path}`, err);
+                      } else {
+                          fs.close(fd);
+                          archive.file(path, {name: name});
+                      }
+                      count += 1
+                      if (count >= 2) { // Two log files
+                          archive.finalize()
+                       }
                     })
-                    tmp.file({ mode: 0o644, prefix: walletdFilePrefix, postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
-                        addToZip(path, fd, this.walletd.logStdout, `${walletdFilePrefix}.txt`)
-                    })
+                  }
+                  tmp.file({ mode: 0o644, prefix: daemonFilePrefix, postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                    addToZip(path, fd, this.daemon.logStdout, `${daemonFilePrefix}.txt`)
+                  })
+                  tmp.file({ mode: 0o644, prefix: walletdFilePrefix, postfix: '.txt'}, (err, path, fd, cleanupCallback) => {
+                      addToZip(path, fd, this.walletd.logStdout, `${walletdFilePrefix}.txt`)
+                  })
                 } else {
+                    process.stdout.write(`${daemon.log_file}`)
+                    process.stdout.write(`${walletd.log_file}`)
                     archive.file(daemon.log_file, {name: `${daemonFilePrefix}.txt`})
                     archive.file(walletd.log_file, {name: `${walletdFilePrefix}.txt`})
                     archive.finalize()
