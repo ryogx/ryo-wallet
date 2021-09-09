@@ -9,8 +9,6 @@ const path = require("path");
 const tmp = require('tmp');
 const archiver = require('archiver');
 
-const eol = JSON.stringify(os.EOL)
-
 export class Backend {
     constructor(mainWindow) {
         this.mainWindow = mainWindow
@@ -265,7 +263,7 @@ export class Backend {
                 archive.pipe(output);
                 let count = 0;
                 const addToZip = (path, fd, stream, name) => {
-                    fs.write(fd, stream.join(eol), err => {
+                    fs.write(fd, stream.join(""), err => {
                         if (err) {
                             process.stderr.write(`Error writing daemon stdout to file ${path}`, err);
                         } else {
