@@ -28,3 +28,10 @@ const msiCreator = new MSICreator({
         chooseDirectory: true
     },
 });
+
+// 4. Create a .wxs template file
+msiCreator.create().then(function(){
+
+    // Step 5: Compile the template to a .msi file
+    msiCreator.compile();
+});
