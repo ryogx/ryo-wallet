@@ -78,12 +78,12 @@ export class WalletRPC {
                     this.wallet_dir = path.join(options.app.data_dir, "testnet", "wallets")
                     this.log_file = path.join(options.app.data_dir, "testnet", "logs", "wallet-rpc.log")
                     args.push("--testnet")
-                    args.push("--log-file", log_file)
+                    args.push("--log-file", this.log_file)
                     args.push("--wallet-dir", this.wallet_dir)
                 } else {
                     this.wallet_dir = path.join(options.app.data_dir, "wallets")
                     this.log_file = path.join(options.app.data_dir, "logs", "wallet-rpc.log")
-                    args.push("--log-file", log_file)
+                    args.push("--log-file", this.log_file)
                     args.push("--wallet-dir", this.wallet_dir)
                 }
                 let log_file = this.log_file
