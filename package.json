@@ -48,8 +48,6 @@
     "electron-devtools-installer": "^2.2.4",
     "electron-rebuild": "^1.8.4",
     "electron-winstaller": "^5.0.0",
-    "@zenul_abidin/electron-wix-msi": "^3.2.3",
-    "@zenul_abidin/exe-icon-extractor": "^1.0.8",
     "eslint": "^5.13.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-friendly-formatter": "^4.0.1",
