@@ -1,1 +1,1 @@
-npm install --save-dev @zenul_abidin/electron-wix-msi@3.2.1 exe-icon-extractor
+npm install --save-dev @zenul_abidin/electron-wix-msi@3.2.5 exe-icon-extractor@1.0.8
